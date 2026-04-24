@@ -1,138 +1,198 @@
 # Marstek Home Assistant Integration
 
+<div align="center">
 
-The Marstek integration is an official integration component for Home Assistant provided by Marstek, which can be used to monitor and control Marstek devices.
+[![HACS Default][hacs-badge]][hacs-url]
+![GitHub Release][release-badge]
+[![License][license-badge]][license-url]
+[![Quality Scale][quality-badge]][quality-url]
+
+**Monitor and control Marstek energy storage devices directly from Home Assistant — fully local, no cloud required.**
+
+</div>
+
+---
+
+## Overview
+
+The Marstek integration provides seamless integration with Marstek battery and inverter systems (Venus A, Venus D, Venus E 3.0+) for real-time monitoring and control within Home Assistant.
+
+It communicates **locally** over your network using UDP broadcast, so your data stays on your premises. No cloud services, no external APIs.
+
+## Features
+
+- **Real-time monitoring** — battery state of charge, power flow, voltage, current, temperature
+- **Local-only communication** — no cloud dependency, data stays on your network
+- **Automatic discovery** — devices found via UDP broadcast and mDNS
+- **Device actions** — control device settings directly from Home Assistant
+- **Config flow** — easy setup through the Home Assistant UI, no YAML required
 
 ## System Requirements
 
-> Home Assistant version requirements:
->
-> - Core version: ^2025.10.0
-> - HAOS version: ^15.0
->
-> Marstek devices and Home Assistant must be on the same local network
->
-> Marstek devices must have OPEN API enabled
->
-> **⚠️ Important**: This integration is currently not compatible with Venus E2.0 devices. Using this integration with Venus E2.0 may cause disconnection between the device and CT003.
+| Requirement | Minimum |
+|---|---|
+| Home Assistant Core | ^2025.10.0 |
+| Home Assistant OS | ^15.0 |
+| Network | HA and devices on the same local network |
+| Device API | OPEN API must be enabled on Marstek devices |
 
-## Quickstart (no existing repo)
-
-If you have not cloned the repository before, follow these steps directly:
-
-```bash
-# 1) Clone the repo (marstek-integration branch)
-git clone https://github.com/home-assistant/core.git
-
-cd core
-
-# 2) Create and activate venv (Python 3.13)
-python3.13 -m venv venv
-
-source venv/bin/activate    # Windows: venv\Scripts\activate
-
-# 3) Install dependencies
-pip install -r requirements.txt -r requirements_test.txt
-
-pip install homeassistant
-
-# 4) Run Home Assistant (uses ./config as your config directory)
-mkir config
-
-hass -c config
-```
+> [!WARNING]
+> This integration is **not compatible** with Venus E2.0 devices. Using it with Venus E2.0 may cause disconnection between the device and the CT003 controller.
 
 ## Installation
 
-### Method 1: Manual Installation (Recommended)
+### Option 1: Install via HACS (Recommended)
 
-1. **Clone the repository and switch to the marstek-dev branch:**
+[![Install with HACS](https://my.home-assistant.io/badges/hacs_repository.svg)][hacs-install-url]
 
-```bash
-git clone https://github.com/MarstekEnergy/ha_marstek.git
+1. Open **HACS** in Home Assistant
+2. Go to **Integrations** → click the **"+"** button
+3. Search for **"Marstek"**
+4. Click **Download**
+5. Restart Home Assistant
+6. Go to **Settings → Devices & Services** → **Add Integration**
+7. Search for **"Marstek"** and follow the setup wizard
 
-cd ha_marstek
+### Option 2: Manual Installation
 
-git checkout marstek-dev
-```
+1. Clone this repository and switch to the `marstek-dev` branch:
+   ```bash
+   git clone https://github.com/MarstekEnergy/ha_marstek.git
+   cd ha_marstek
+   git checkout marstek-dev
+   ```
 
-2. **Copy the marstek folder to your Home Assistant components directory:**
+2. Copy the `custom_components/marstek` folder to your Home Assistant config directory:
+   ```bash
+   cp -r ./custom_components/marstek /path/to/homeassistant/config/custom_components/
+   ```
 
-```bash
-# If using Home Assistant Core (Python virtual environment)
-cp -r ./custom_components/marstek /path/to/homeassistant/config/custom_components/marstek
+3. Restart Home Assistant
 
-```
+4. Go to **Settings → Devices & Services** → **Add Integration**
 
+5. Search for **"Marstek"** and follow the configuration flow
 
-## Important Notes
+## Configuration
 
-- **Branch**: Make sure you're on the `marstek-dev` branch to get the latest development version.
-- **Directory Structure**: The `marstek` folder should be placed directly in the `components` directory, not in a subdirectory.
-- **Permissions**: Ensure the files have proper read permissions for the Home Assistant process.
+No manual `configuration.yaml` entry is needed. The integration uses a web-based config flow accessible through the Home Assistant UI.
 
-## After Installation
+Upon first setup, the integration will automatically:
+1. Broadcast a UDP discovery packet on port `30000`
+2. Listen for responses from nearby Marstek devices
+3. Present discovered devices for configuration
 
-1. Restart Home Assistant
-2. Go to **Settings** → **Devices & Services**
-3. Click **Add Integration**
-4. Search for "Marstek"
-5. Follow the configuration flow
+> [!TIP]
+> If your device isn't discovered, verify that OPEN API is enabled in the Marstek app and that port 30000 is open on your network.
 
-## Directory Structure
+## Supported Devices
 
-After installation, your Home Assistant components directory should look like:
-
-```
-homeassistant/components/
-├── marstek/
-│   ├── __init__.py
-│   ├── config_flow.py
-│   ├── const.py
-│   ├── coordinator.py
-│   ├── device_action.py
-│   ├── manifest.json
-│   ├── quality_scale.yaml
-│   ├── scanner.py
-│   ├── sensor.py
-│   ├── strings.json
-│   └── translations/
-│       └── en.json
-└── ... (other components)
-```
+| Device | Supported |
+|---|---|
+| Venus A | ✅ |
+| Venus D | ✅ |
+| Venus E 3.0 | ✅ (with updated firmware) |
+| Venus E2.0 | ❌ Not compatible |
+| Other Marstek devices with OPEN API | ✅ |
 
 ## Updating the Integration
 
-To update to the latest version:
+### Via HACS
+
+HACS will automatically notify you when a new version is available. Click **Update** in the HACS UI, then restart Home Assistant.
+
+### Manual Update
 
 ```bash
-# If you kept the cloned repository
 cd /path/to/ha_marstek
-
 git pull origin marstek-dev
-
-# Copy the updated files
-cp -r ./custom_components/marstek /path/to/homeassistant/config/custom_components/marstek
-
-
+cp -r ./custom_components/marstek /path/to/homeassistant/config/custom_components/
 ```
 
+## Directory Structure
 
+After installation, your Home Assistant directory will contain:
+
+```
+config/custom_components/marstek/
+├── __init__.py         # Integration entry point
+├── config_flow.py      # UI configuration flow
+├── const.py            # Constants and defaults
+├── coordinator.py       # Data update coordinator
+├── device_action.py    # Device actions
+├── manifest.json        # Integration metadata
+├── quality_scale.yaml   # HACS quality scale (Bronze)
+├── scanner.py           # UDP device scanner
+├── sensor.py            # Sensor entity definitions
+├── strings.json         # Config flow strings
+└── translations/
+    └── en.json          # English translations
+```
 
 ## Frequently Asked Questions
 
-1. **Which devices are supported?**
+### What is OPEN API?
 
-   Supports Venus A, Venus D, Venus E 3.0 with new firmware versions, as well as other Marstek devices that support OPEN API communication.
-   
-   **Note**: This integration is currently not compatible with Venus E2.0 devices. Using this integration with Venus E2.0 may cause disconnection between the device and CT003.
+OPEN API is a local communication interface built into Marstek device firmware. It allows querying device status and sending control commands over the local network without requiring an internet connection.
 
-2. **Why can't I find my device?**
+Enable it in the Marstek mobile app under device settings.
 
-   - OPEN API is not enabled on the device
-   - Ensure Marstek devices and Home Assistant are on the same network segment, and port 30000 is open
-   - The integration searches for devices via UDP broadcast. Network fluctuations may affect communication between devices and HA. It is recommended to retry
+### Why can't I find my device?
 
-3. **What is OPEN API?**
+- OPEN API is not enabled on the device
+- Home Assistant and the device are on different network segments
+- Port 30000 is blocked by a firewall
+- The device is in a sleep state — try pinging the network or checking again
 
-   OPEN API is a communication interface provided by Marstek device firmware for querying device status and controlling some commands in a local network environment.
+### What sensors are available?
+
+Typical sensors include:
+- Battery state of charge (%)
+- Battery voltage and current
+- Power flow (charge/discharge/standby)
+- Device temperature
+- Grid power, load power
+- System status
+
+### Can I use this with the Marstek app at the same time?
+
+Yes, both can coexist on the same network. However, avoid making conflicting commands from both interfaces simultaneously.
+
+## Development
+
+### Running Tests
+
+```bash
+pip install -r requirements.txt -r requirements_test.txt
+pytest tests/
+```
+
+### Code Structure
+
+- `scanner.py` — UDP broadcast discovery
+- `coordinator.py` — DataUpdateCoordinator for entity state management
+- `sensor.py` — Entity definitions for all sensor types
+- `config_flow.py` — Home Assistant config flow implementation
+
+## License
+
+Copyright (C) 2025 Hamedata Technology Co., Limited.
+
+This software is provided under a proprietary license. See the [LICENSE](LICENSE) file for full terms. Redistribution and use in source and binary forms must retain the copyright notice and license terms.
+
+---
+
+<div align="center">
+
+Built with ❤️ for the Home Assistant community
+
+[hacs-badge]: https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge&logo=home-assistant
+[hacs-url]: https://hacs.xyz/docs/features/integrations
+[hacs-install-url]: https://my.home-assistant.io/redirect/hacs_repository/?owner=MarstekEnergy&repository=ha_marstek&category=integration
+[release-badge]: https://img.shields.io/github/v/release/MarstekEnergy/ha_marstek?style=for-the-badge
+[license-badge]: https://img.shields.io/badge/License-Proprietary-888?style=for-the-badge
+[license-url]: LICENSE
+[quality-badge]: https://img.shields.io/badge/Quality_Scale-Bronze-F5B700?style=for-the-badge
+[quality-url]: https://www.home-assistant.io/integrations/marstek
+
+</div>
